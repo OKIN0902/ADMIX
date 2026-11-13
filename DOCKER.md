@@ -1,6 +1,6 @@
 # ADMIX Docker Guide
 
-This repository has separate Docker Compose configurations for local development and production. Never commit `.env`, `.env.production`, database dumps, or real credentials.
+This repository has separate Docker Compose configurations for local development and production. The PHP runtime uses PHP 8.4 because the currently locked Symfony 8.1 packages require PHP >= 8.4.1. Never commit `.env`, `.env.production`, database dumps, or real credentials.
 
 ## Local development (Windows / Docker Desktop)
 
