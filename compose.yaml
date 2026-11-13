@@ -17,9 +17,9 @@ services:
       DB_CONNECTION: mysql
       DB_HOST: db
       DB_PORT: "3306"
-      DB_DATABASE: \${ADMIX_DB_NAME:-admix}
-      DB_USERNAME: \${ADMIX_DB_USER:-admix}
-      DB_PASSWORD: \${ADMIX_DB_PASSWORD:-admix_local_password}
+      DB_DATABASE: ${ADMIX_DB_NAME:-admix}
+      DB_USERNAME: ${ADMIX_DB_USER:-admix}
+      DB_PASSWORD: ${ADMIX_DB_PASSWORD:-admix_local_password}
       CACHE_STORE: file
       SESSION_DRIVER: file
       QUEUE_CONNECTION: database
@@ -47,10 +47,10 @@ services:
   db:
     image: mariadb:10.11
     environment:
-      MARIADB_DATABASE: \${ADMIX_DB_NAME:-admix}
-      MARIADB_USER: \${ADMIX_DB_USER:-admix}
-      MARIADB_PASSWORD: \${ADMIX_DB_PASSWORD:-admix_local_password}
-      MARIADB_ROOT_PASSWORD: \${ADMIX_DB_ROOT_PASSWORD:-admix_root_local_password}
+      MARIADB_DATABASE: ${ADMIX_DB_NAME:-admix}
+      MARIADB_USER: ${ADMIX_DB_USER:-admix}
+      MARIADB_PASSWORD: ${ADMIX_DB_PASSWORD:-admix_local_password}
+      MARIADB_ROOT_PASSWORD: ${ADMIX_DB_ROOT_PASSWORD:-admix_root_local_password}
     ports:
       - "127.0.0.1:3307:3306"
     volumes:

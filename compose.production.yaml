@@ -1,19 +1,19 @@
 name: admix-prod
 
 x-app-environment: &app-environment
-  APP_NAME: \${APP_NAME:-ADMIX}
+  APP_NAME: ${APP_NAME:-ADMIX}
   APP_ENV: production
   APP_DEBUG: "false"
-  APP_KEY: \${APP_KEY:?Set APP_KEY in .env.production}
-  APP_URL: \${APP_URL:?Set APP_URL in .env.production}
+  APP_KEY: ${APP_KEY:?Set APP_KEY in .env.production}
+  APP_URL: ${APP_URL:?Set APP_URL in .env.production}
   LOG_CHANNEL: stderr
   LOG_LEVEL: warning
   DB_CONNECTION: mysql
   DB_HOST: db
   DB_PORT: "3306"
-  DB_DATABASE: \${ADMIX_DB_NAME:?Set ADMIX_DB_NAME in .env.production}
-  DB_USERNAME: \${ADMIX_DB_USER:?Set ADMIX_DB_USER in .env.production}
-  DB_PASSWORD: \${ADMIX_DB_PASSWORD:?Set ADMIX_DB_PASSWORD in .env.production}
+  DB_DATABASE: ${ADMIX_DB_NAME:?Set ADMIX_DB_NAME in .env.production}
+  DB_USERNAME: ${ADMIX_DB_USER:?Set ADMIX_DB_USER in .env.production}
+  DB_PASSWORD: ${ADMIX_DB_PASSWORD:?Set ADMIX_DB_PASSWORD in .env.production}
   CACHE_STORE: file
   SESSION_DRIVER: file
   QUEUE_CONNECTION: database
@@ -51,7 +51,7 @@ services:
       context: .
       target: nginx
     ports:
-      - "\${HTTP_PORT:-80}:80"
+      - "${HTTP_PORT:-80}:80"
     volumes:
       - admix_storage:/var/www/html/storage:ro
     depends_on:
@@ -61,10 +61,10 @@ services:
   db:
     image: mariadb:10.11
     environment:
-      MARIADB_DATABASE: \${ADMIX_DB_NAME:?Set ADMIX_DB_NAME in .env.production}
-      MARIADB_USER: \${ADMIX_DB_USER:?Set ADMIX_DB_USER in .env.production}
-      MARIADB_PASSWORD: \${ADMIX_DB_PASSWORD:?Set ADMIX_DB_PASSWORD in .env.production}
-      MARIADB_ROOT_PASSWORD: \${ADMIX_DB_ROOT_PASSWORD:?Set ADMIX_DB_ROOT_PASSWORD in .env.production}
+      MARIADB_DATABASE: ${ADMIX_DB_NAME:?Set ADMIX_DB_NAME in .env.production}
+      MARIADB_USER: ${ADMIX_DB_USER:?Set ADMIX_DB_USER in .env.production}
+      MARIADB_PASSWORD: ${ADMIX_DB_PASSWORD:?Set ADMIX_DB_PASSWORD in .env.production}
+      MARIADB_ROOT_PASSWORD: ${ADMIX_DB_ROOT_PASSWORD:?Set ADMIX_DB_ROOT_PASSWORD in .env.production}
     volumes:
       - mariadb_data:/var/lib/mysql
     healthcheck:
