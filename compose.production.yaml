@@ -1,0 +1,80 @@
+name: admix-prod
+
+x-app-environment: &app-environment
+  APP_NAME: \${APP_NAME:-ADMIX}
+  APP_ENV: production
+  APP_DEBUG: "false"
+  APP_KEY: \${APP_KEY:?Set APP_KEY in .env.production}
+  APP_URL: \${APP_URL:?Set APP_URL in .env.production}
+  LOG_CHANNEL: stderr
+  LOG_LEVEL: warning
+  DB_CONNECTION: mysql
+  DB_HOST: db
+  DB_PORT: "3306"
+  DB_DATABASE: \${ADMIX_DB_NAME:?Set ADMIX_DB_NAME in .env.production}
+  DB_USERNAME: \${ADMIX_DB_USER:?Set ADMIX_DB_USER in .env.production}
+  DB_PASSWORD: \${ADMIX_DB_PASSWORD:?Set ADMIX_DB_PASSWORD in .env.production}
+  CACHE_STORE: file
+  SESSION_DRIVER: file
+  QUEUE_CONNECTION: database
+  FILESYSTEM_DISK: public
+  MAIL_MAILER: log
+
+services:
+  app:
+    build:
+      context: .
+      target: production
+    environment: *app-environment
+    volumes:
+      - admix_storage:/var/www/html/storage
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      target: production
+    command: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--timeout=90"]
+    environment: *app-environment
+    volumes:
+      - admix_storage:/var/www/html/storage
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      target: nginx
+    ports:
+      - "\${HTTP_PORT:-80}:80"
+    volumes:
+      - admix_storage:/var/www/html/storage:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  db:
+    image: mariadb:10.11
+    environment:
+      MARIADB_DATABASE: \${ADMIX_DB_NAME:?Set ADMIX_DB_NAME in .env.production}
+      MARIADB_USER: \${ADMIX_DB_USER:?Set ADMIX_DB_USER in .env.production}
+      MARIADB_PASSWORD: \${ADMIX_DB_PASSWORD:?Set ADMIX_DB_PASSWORD in .env.production}
+      MARIADB_ROOT_PASSWORD: \${ADMIX_DB_ROOT_PASSWORD:?Set ADMIX_DB_ROOT_PASSWORD in .env.production}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  mariadb_data:
+  admix_storage:

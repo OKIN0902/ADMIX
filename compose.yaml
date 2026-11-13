@@ -1,0 +1,81 @@
+name: admix-dev
+
+services:
+  app:
+    build:
+      context: .
+      target: development
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    env_file:
+      - .env
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8080
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_DATABASE: \${ADMIX_DB_NAME:-admix}
+      DB_USERNAME: \${ADMIX_DB_USER:-admix}
+      DB_PASSWORD: \${ADMIX_DB_PASSWORD:-admix_local_password}
+      CACHE_STORE: file
+      SESSION_DRIVER: file
+      QUEUE_CONNECTION: database
+    command: >-
+      sh -lc "mkdir -p storage/framework/cache storage/framework/sessions
+      storage/framework/views storage/logs bootstrap/cache
+      && chmod -R a+rwX storage bootstrap/cache
+      && php-fpm -F"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    image: nginx:1.28-alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  db:
+    image: mariadb:10.11
+    environment:
+      MARIADB_DATABASE: \${ADMIX_DB_NAME:-admix}
+      MARIADB_USER: \${ADMIX_DB_USER:-admix}
+      MARIADB_PASSWORD: \${ADMIX_DB_PASSWORD:-admix_local_password}
+      MARIADB_ROOT_PASSWORD: \${ADMIX_DB_ROOT_PASSWORD:-admix_root_local_password}
+    ports:
+      - "127.0.0.1:3307:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  node:
+    image: node:22-bookworm-slim
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - node_modules:/var/www/html/node_modules
+    command: >-
+      sh -lc "npm install --no-audit --no-fund --no-package-lock
+      && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    restart: unless-stopped
+
+volumes:
+  mariadb_data:
+  node_modules:
